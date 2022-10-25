@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Building an Open-Source Map of the World's Languages</title>
+  <link data-turbolinks-track="true" href="application.css" media="all" rel="stylesheet" />
+  
+  <!--[if lte IE 8]>
+    <link data-turbolinks-track="true" href="ie.css" media="all" rel="stylesheet" />
+  <![endif]-->
+  
+  <meta property="og:image" content="http://jonathansoma.com/open-source-language-map/images/screencap.png"/>
+  <meta property="og:title" content="Building an Open-Source Map of the World's Languages"/>
+  <meta property="og:url" content="http://jonathansoma.com/open-source-language-map"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:description" content="Linguists have awesome mapping visualizations up their sleeves, but they don't have a universal, open-source dataset for where languages are spoken. We're going to fix that!"/>
+  <meta property="fb:admins" content="1504164"/>
+  <meta content="authenticity_token" name="csrf-param" />
+<meta content="2S8SGkFgL/zWXKQCAUgxxUz1S3A4bZT4JThz4gWxNoE=" name="csrf-token" />
+</head>
+<body>
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=470493023002000";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+  
+  <script id="language-blurb-template" type="text/x-handlebars-template">
+    <p><strong class='name'>{{possible name}}</strong> <a href="#" class="btn-edit">Edit</a></p>
+    <p>{{possible iso1}} / {{possible iso2b}} / {{possible iso2t}} / {{possible iso3}}</p>
+  </script>
+
+  <script id="language-edit-template" type="text/x-handlebars-template">
+
+    <div class="input">
+      <label>English Name</label> <input type="text" name="name" placeholder="Name" value="{{name}}" required><br/>
+    </div>
+    <div class="input">
+      <label># Speakers</label> <input type="text" name="speakers" placeholder="# of speakers" value="{{speakers}}" required><br/>
+    </div>
+    <div class="input">
+      <label>ISO 639-1</label> <input type="text" name="iso1" placeholder="ISO 639-1" value="{{iso1}}"><br/>
+    </div>
+    <div class="input">
+      <label>ISO 639-2/B</label> <input type="text" name="iso2b" placeholder="ISO 639-2/B" value="{{iso2b}}"><br/>
+    </div>
+    <div class="input">
+      <label>ISO 639-2/T</label> <input type="text" name="iso2t" placeholder="ISO 639-2/T" value="{{iso2t}}"><br/>
+    </div>
+    <div class="input">
+      <label>ISO 639-3</label> <input type="text" name="iso3" placeholder="ISO 639-3" value="{{iso3}}">
+    </div>
+  </script>
+
+  <div id='map'></div>
+  <div id='content'>   
+     
+    
+<section id="hero">
+  <div style="background: #ffc; padding: 15px; color: white;">
+      <p><strong>This page is archived!</strong></p>
+      <p>It was a fun experiment, but between blurry boundaries, official vs. unofficial languages, country borders vs. language borders, and a million other things, it was too big a beast to wrangle! No wonder the <a href="http://www.ethnologue.com/browse/maps">Ethnologue</a> is so esteemed.</p>
+      <p>It's definitely fun to browse, though. Have at it! The data itself is pulled inline from <a href="language_data.js">language_data.js</a>.</p>
+  </div>
+  <h1>We need your help!</h1>
+  <p>We're trying to <strong>map the world's languages</strong>, and we can't do it alone.</p>
+  <p>Linguists have <strong>awesome visualizations</strong> up their sleeves, but they don't have a <strong>universal, open-source dataset for where languages are spoken</strong>.</p>
+  <p>We're going to fix that!</p>
+  <a href="https://twitter.com/share" class="twitter-share-button" data-via="dangerscarf">Tweet</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+  <div class="fb-like" data-send="false" data-layout="button_count" data-width="90" data-show-faces="true"></div>
+</section>
+
+<section id="current-language" class="inactive">
+  <h2>Editing</h2>
+  <p>Don't worry if you don't have all the answers, but <a href="http://en.wikipedia.org/wiki/Lists_of_languages" target="_new">Wikipedia</a> is good for codes and geographic info.</p>
+  <div id="current-info"></div>
+  <p class="note">Use the <img alt="Polygon" src="polygon.png" /> polygon tool on the map to draw the areas this language is spoken in. Multiple polygons are OK. Be sure to click <strong>save</strong> when you're done!</p>
+  <p>Once you save and submit your changes, I'll check 'em out and update the main map!</p>
+  <div class="action-buttons"><a href="#" class="btn btn-save" onclick="mapper.saveCurrent(); return false;">Save</a> <a href="#" class="btn btn-cancel" onclick="mapper.cancelCurrent(); return false;">Cancel</a></div>
+</section>
+
+<section id="all-languages">
+  <h2>
+    Languages <a class="btn" href="#" onclick="mapper.newLanguage(); return false;">Add new +</a>
+  </h2>
+  <p>Add or edit to your heart's content. Need a slightly out-of-date <a href="/open-source-language-map/howto" target="_new">tiny demo</a>?</p>
+  <p><input type="text" id="language-search" placeholder="Filter list"></p>
+  <div id="language-list-holder">
+    <div id="language-list"></div>
+  </div>
+</section>
+
+<section>
+  <h2>What's the story?</h2>
+  <p>To be frank, I just didn't want to pay $750 for a locked-down map of the world's languages that I <em>can't even use on the web</em>. If you don't either, maybe me and you and this site can all be friends together.</p>
+  <p>I'm aiming to make an <strong>open-source, freely useable map of the world's languages</strong> for all of your linguistic needs. In any and all formats, too: shapefiles, GeoJSON, whatever tickles your fancy.</p>
+  <p>You can find existing maps to base your additions on at the amazing <a href="http://www.ethnologue.com/browse/maps" target="_new">Ethnologue</a> and Wikipedia's <a href="http://en.wikipedia.org/wiki/Lists_of_languages" target="_new">lists of languages</a>.</p>
+  <p>Once the map is useful enough I'll set up a mode built for browsing instead of just editing!</p>
+</section>
+
+<section>
+  <h2>Questions!</h2>
+  <p><strong>HELP! My edit disappeared!</strong></p>
+  <p>The site actually isn't automatic - edits go into a queue in the backend where I have to approve them and push them up to the site. Don't worry, it's on its way!</p>
+  <p><strong>What about dialects?</strong></p>
+  <p>I sure don't know, and am fully open to suggestions!</p>
+  <p><strong>Does the tool support multiple polygons?</strong></p>
+  <p>Yup, after you've completed one polygon just click the polygon button again, and you'll be able to draw another shape. This is useful for languages distributed across islands or different ends of the globe.</p>
+  <p><strong>What about overlapping languages?</strong><p>
+  <p>Overlapping languages is no problem - I need to work on a way for the hover to work a little better with them, though. You can just draw a shape on top of another shape and it'll work just right.</p>
+</section>
+
+<section id="stay-connected">
+  <p>
+    <label>Your email</label>
+    <input type="email" id="email" placeholder="user@example.com" name="email">
+    <a href="#" class="btn btn-stay-updated">Stay Updated</a>
+    </p>
+</section>
+
+<section>
+  <h2>Who am I?</h2>
+  <p>Hi, I'm <a href="http://www.jonathansoma.com">Soma</a>. I took a linguistics class once and half-remember the Japanese alphabet, so I'm clearly qualified to do all of this.</p>
+  <p>I live in Brooklyn and run a <a href="http://brooklynbrainery.com" target="_new">school for dilettantes</a> and an <a href="http://dabbles.in" target="_new">awesome hobby newsletter</a>.</p>
+  <p>You can follow my paper trail at <a href="http://twitter.com/dangerscarf" target="_new">@dangerscarf</a> or send faintly threatening letters to <a href="mailto:jonathan.soma@gmail.com">jonathan.soma@gmail.com</a>.
+</section>
+
+
+    
+    <!--[if lte IE 8]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/es5-shim/2.0.8/es5-shim.min.js" type="text/javascript"></script>
+    <script data-turbolinks-track="true" src="application.js"></script>
+    <script data-turbolinks-track="true" src="language_data.js"></script>
+    
+  </div>
+  
+    <script>
+    var options = {}
+
+    if(typeof(languages) !== 'undefined') {
+      options.languages = languages;
+    }
+
+    var mapper = new LanguageMapper.Map('map', options );
+  </script>
+
+  
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-5541738-17', 'jonathansoma.com');
+    ga('send', 'pageview');
+
+  </script>
+</body>
+</html>
